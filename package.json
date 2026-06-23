@@ -1,0 +1,58 @@
+{
+  "name": "cashera-kb",
+  "version": "0.1.0",
+  "description": "Cashera Capital knowledge base — builds a queryable KB from Gmail exports and Teams channel history using Claude + RAG. Will power the support agent on casheracapital.com.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev:api": "tsx watch src/api/server.ts",
+    "dev:worker": "tsx watch src/api/worker.ts",
+    "dev:web": "next dev src/web -p 3000",
+    "process:mbox": "tsx scripts/process-mbox.ts",
+    "login:teams": "tsx scripts/login-teams.ts",
+    "sync:teams": "tsx scripts/sync-teams.ts",
+    "embed:backfill": "tsx scripts/embed-backfill.ts",
+    "export:finetune": "tsx scripts/export-finetune.ts",
+    "eval:run": "tsx scripts/eval-queries.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@azure/msal-node": "^2.16.0",
+    "@fastify/cors": "^10.0.0",
+    "@fastify/multipart": "^9.0.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "bullmq": "^5.21.0",
+    "clsx": "^2.1.1",
+    "dotenv": "^16.4.0",
+    "fastify": "^5.0.0",
+    "ioredis": "^5.4.0",
+    "lucide-react": "^0.456.0",
+    "mailparser": "^3.7.2",
+    "next": "^15.0.0",
+    "pg": "^8.13.0",
+    "pgvector": "^0.2.0",
+    "pino": "^9.5.0",
+    "pino-pretty": "^11.3.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/pg": "^8.11.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

@@ -1,0 +1,11 @@
+FROM node:20-alpine
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+EXPOSE 3001
+# CMD is overridden to "tsx src/api/worker.ts" for the worker container
+CMD ["node_modules/.bin/tsx", "src/api/server.ts"]
