@@ -61,7 +61,7 @@ export default function Home() {
         <div className="flex items-center gap-2.5 px-5 py-5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white"><Database className="h-5 w-5" /></div>
           <div>
-            <div className="text-sm font-semibold text-white leading-tight">Cashera KB</div>
+            <div className="text-sm font-semibold text-white leading-tight">LendingGenie</div>
             <div className="text-xs text-slate-400">Support Console</div>
           </div>
         </div>
@@ -145,7 +145,7 @@ const TRAINING_STEPS = [
   {
     n: 1,
     title: 'Open a support email',
-    body: 'Start with any real customer email in support@casheracapital.com. Pick a thread where a customer asked a question — common topics are applications, funding timelines, repayment, and eligibility.',
+    body: 'Start with any real customer email in support@lendinggenie.com. Pick a thread where a customer asked a question — common topics are applications, funding timelines, repayment, and eligibility.',
     cta: null,
   },
   {
@@ -206,14 +206,14 @@ function DashboardView({ onNavigate }: { onNavigate: (v: View) => void }) {
           <div className="min-w-0">
             <h2 className="text-xl font-bold leading-snug">Welcome, Support Team!</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-brand-100">
-              Thanks for taking the time to train the Cashera Support Knowledge Base. Your work here
+              Thanks for taking the time to train the LendingGenie Support Knowledge Base. Your work here
               directly improves how our AI assistant answers real customer questions — every correction,
               review, and gap you fill makes it smarter for the next customer.
             </p>
             <p className="mt-3 text-sm text-brand-200">
               Training sprint runs through <span className="font-semibold text-white">June 26, 2026</span>.
               Focus on testing real support emails from{' '}
-              <span className="font-semibold text-white">support@casheracapital.com</span> and following
+              <span className="font-semibold text-white">support@lendinggenie.com</span> and following
               the steps below.
             </p>
           </div>
@@ -343,7 +343,7 @@ type ChatMsg = {
   queryId?: string; confidence?: number; sufficientContext?: boolean; escalation?: boolean;
   citations?: { qaId: string; question: string; similarity: number }[]; rated?: 1 | -1;
 };
-const GREETING = "Hi! I'm the Cashera support assistant. Ask me about our products, accounts, fees, timelines, or processes — I'm happy to help.";
+const GREETING = "Hi! I'm the LendingGenie support assistant. Ask me about our products, accounts, fees, timelines, or processes — I'm happy to help.";
 
 const STARTER_QUESTIONS = [
   'How much can I borrow?',
@@ -395,7 +395,7 @@ function AskView() {
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
         <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white"><Bot className="h-3.5 w-3.5" /></span>
-          Cashera Support
+          LendingGenie Support
         </div>
         <Button variant="ghost" size="sm" onClick={clearChat}>Clear</Button>
       </div>

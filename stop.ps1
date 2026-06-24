@@ -1,4 +1,4 @@
-# Cashera KB — stop everything.
+# LendingGenie — stop everything.
 # Stops the Node services and the Docker containers. Your data is preserved
 # (Postgres volume + .msal_cache.json survive).
 

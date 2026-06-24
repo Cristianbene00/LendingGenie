@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_USER: kb
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: cashera_kb
+      POSTGRES_DB: lendinggenie
     volumes:
       - pgdata:/var/lib/postgresql/data
       # All *.sql files in migrations/ run automatically on first container init.
@@ -64,7 +64,7 @@ services:
       context: .
       dockerfile: Dockerfile.web
       args:
-        NEXT_PUBLIC_API_URL: https://knowledge.casheracapital.com
+        NEXT_PUBLIC_API_URL: https://lendinggenie.blueflowtech.com
     restart: always
     env_file: .env.production
     depends_on:

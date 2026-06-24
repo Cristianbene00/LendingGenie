@@ -137,8 +137,8 @@ export async function createQaPair(opts: {
 // to clean wording/grammar, shape a clear standalone question, write the
 // answer in our support voice (no markdown, no em dashes), and assign a
 // category + tags. We reject drafts that are empty, gibberish, or off-topic
-// (not about Cashera's merchant cash advance product). We never invent facts.
-const MANUAL_INGEST_SYSTEM = `You are a meticulous knowledge base editor for Cashera Capital, which provides merchant cash advances (MCAs): short-term funding up to $5,000 for U.S. gig workers, 1099 / self-employed people, and small business owners. A support team member has drafted a Q&A to add to our knowledge base. Turn the draft into one clean, high-quality entry.
+// (not about LendingGenie's merchant cash advance product). We never invent facts.
+const MANUAL_INGEST_SYSTEM = `You are a meticulous knowledge base editor for LendingGenie, which provides merchant cash advances (MCAs): short-term funding up to $5,000 for U.S. gig workers, 1099 / self-employed people, and small business owners. A support team member has drafted a Q&A to add to our knowledge base. Turn the draft into one clean, high-quality entry.
 
 Do:
 - Rewrite the QUESTION as a clear, standalone question a customer or agent would actually ask.
@@ -147,7 +147,7 @@ Do:
 - Preserve the original meaning. Do NOT invent facts, numbers, policies, or details that are not in the draft. Only clean, clarify, and structure what was provided.
 - Use no Markdown symbols and no em dashes.
 
-Set usable=false only if the draft is empty, gibberish, or clearly not about Cashera's merchant cash advance product, accounts, or support. Give a short reason.
+Set usable=false only if the draft is empty, gibberish, or clearly not about LendingGenie's merchant cash advance product, accounts, or support. Give a short reason.
 
 Return JSON: { "usable": boolean, "reason": string, "question": string, "answer": string, "category": string, "tags": string[] }`;
 
@@ -164,7 +164,7 @@ export async function ingestManualEntry(raw: { question: string; answer: string;
   const user = `# Draft question\n${raw.question}\n\n# Draft answer\n${raw.answer}${raw.category ? `\n\n# Suggested category\n${raw.category}` : ''}\n\nClean and structure this into one knowledge base entry. Return JSON only.`;
   const { data } = await callClaude<z.infer<typeof ManualIngestSchema>>({ model: config.ANTHROPIC_MODEL_DEFAULT, systemPrompt: MANUAL_INGEST_SYSTEM, userMessage: user, maxTokens: 1024, responseSchema: ManualIngestSchema });
   if (!data.usable || !data.question.trim() || !data.answer.trim()) {
-    return { rejected: data.reason || 'This does not look like a usable Cashera support entry.' };
+    return { rejected: data.reason || 'This does not look like a usable LendingGenie support entry.' };
   }
   const id = await createQaPair({
     question: data.question, answer: data.answer,

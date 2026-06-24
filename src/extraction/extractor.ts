@@ -5,7 +5,7 @@ import { ExtractionResult, ExtractionResultSchema, Thread } from '../shared/sche
 
 const config = getConfig();
 
-const EXTRACTION_SYSTEM_PROMPT = `You are extracting reusable Q&A pairs from a customer support email or chat thread for Cashera Capital's knowledge base.
+const EXTRACTION_SYSTEM_PROMPT = `You are extracting reusable Q&A pairs from a customer support email or chat thread for LendingGenie's knowledge base.
 
 # Decide first: is this a Q&A thread?
 Set is_qa_thread = false (and qa_pairs = []) if:

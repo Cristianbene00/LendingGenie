@@ -7,8 +7,8 @@ RUN npm ci
 COPY . .
 
 # NEXT_PUBLIC_API_URL must be set at build time — Next.js bakes it in.
-# Pass it via: docker-compose build --build-arg NEXT_PUBLIC_API_URL=https://knowledge.casheracapital.com
-ARG NEXT_PUBLIC_API_URL=https://knowledge.casheracapital.com
+# Pass it via: docker-compose build --build-arg NEXT_PUBLIC_API_URL=https://lendinggenie.blueflowtech.com
+ARG NEXT_PUBLIC_API_URL=https://lendinggenie.blueflowtech.com
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NODE_ENV=production
 
