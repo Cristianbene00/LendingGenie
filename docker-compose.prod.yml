@@ -64,7 +64,7 @@ services:
       context: .
       dockerfile: Dockerfile.web
       args:
-        NEXT_PUBLIC_API_URL: https://knowledge.lendinggenie.com
+        NEXT_PUBLIC_API_URL: https://lendinggenie.blueflowtech.com
     restart: always
     env_file: .env.production
     depends_on:
