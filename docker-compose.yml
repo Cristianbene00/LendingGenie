@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_USER: kb
       POSTGRES_PASSWORD: devpassword
-      POSTGRES_DB: cashera_kb
+      POSTGRES_DB: lendinggenie
     ports:
       - "5432:5432"
     volumes:

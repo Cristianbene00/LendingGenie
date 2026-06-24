@@ -97,7 +97,7 @@ async function handleEmbed() {
 
 async function main() {
   const ws = startWorkers({ mbox: handleMbox, teams: handleTeams, extract: handleExtract, embed: handleEmbed });
-  logger.info('Cashera KB worker started');
+  logger.info('LendingGenie worker started');
   const stop = async () => { await Promise.all(ws.map((w) => w.close())); process.exit(0); };
   process.on('SIGINT', stop); process.on('SIGTERM', stop);
 }

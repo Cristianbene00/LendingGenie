@@ -24,7 +24,7 @@ const ConfigSchema = z.object({
   // Falls back to TEAMS_ENG_CHANNEL (labeled "Engineers") if unset.
   TEAMS_CHANNELS: z.string().optional(),
 
-  INTERNAL_EMAIL_DOMAIN: z.string().default('casheracapital.com'),
+  INTERNAL_EMAIL_DOMAIN: z.string().default('lendinggenie.com'),
 
   // Shown to customers when they ask for a human / when we can't answer.
   SUPPORT_BUSINESS_HOURS: z.string().default('Monday–Friday, 9:00 AM–5:00 PM ET'),

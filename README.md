@@ -1,6 +1,6 @@
-# Cashera Capital — AI Knowledge Base
+# LendingGenie — AI Knowledge Base
 
-Reads bulk support emails (Gmail .mbox) and Microsoft Teams engineering channel messages, extracts reusable Q&A pairs using Claude, embeds them with OpenAI, and serves grounded answers via RAG. Will power the support agent on casheracapital.com.
+Reads bulk support emails (Gmail .mbox) and Microsoft Teams engineering channel messages, extracts reusable Q&A pairs using Claude, embeds them with OpenAI, and serves grounded answers via RAG. Will power the support agent on lendinggenie.com.
 
 ## Architecture
 
@@ -32,8 +32,8 @@ User question ──→ embed query ──→ cosine search top-K ──→ Clau
 
 ```powershell
 # 1. Clone and install
-git clone <repo> cashera-kb
-cd cashera-kb
+git clone <repo> lendinggenie
+cd lendinggenie
 npm install
 
 # 2. Start Postgres + Redis
@@ -95,7 +95,7 @@ npm run eval:run                              # Run eval harness
 - Per query (steady state): ~$0.012
 - Teams prefilter (Haiku, per thread): ~$0.0005
 
-## Integrating into casheracapital.com
+## Integrating into lendinggenie.com
 
 When ready, your web app just needs to call the API:
 

@@ -1,4 +1,4 @@
-# Cashera KB — one-command startup.
+# LendingGenie — one-command startup.
 # Usage: right-click → "Run with PowerShell", or in a terminal:  .\start.ps1
 # Starts Postgres+Redis (Docker), then the API, worker, and web UI each in
 # their own window, and opens the browser.
@@ -19,7 +19,7 @@ docker compose up -d | Out-Null
 Write-Host "      Waiting for Postgres to be ready..." -ForegroundColor DarkGray
 $ready = $false
 for ($i = 0; $i -lt 30; $i++) {
-  try { docker exec cashera_code-postgres-1 pg_isready -U kb *> $null; if ($LASTEXITCODE -eq 0) { $ready = $true; break } } catch {}
+  try { $pg = docker compose ps -q postgres; if ($pg) { docker exec $pg pg_isready -U kb *> $null; if ($LASTEXITCODE -eq 0) { $ready = $true; break } } } catch {}
   Start-Sleep -Seconds 2
 }
 if (-not $ready) { Write-Host "Postgres didn't become ready in time." -ForegroundColor Red; Read-Host "Press Enter to exit"; exit 1 }
@@ -36,5 +36,5 @@ Start-Sleep -Seconds 8
 Start-Process "http://localhost:3000"
 
 Write-Host ""
-Write-Host "Cashera KB is starting. Three windows opened (API / Worker / Web)." -ForegroundColor Green
+Write-Host "LendingGenie is starting. Three windows opened (API / Worker / Web)." -ForegroundColor Green
 Write-Host "To stop everything later, run:  .\stop.ps1" -ForegroundColor Yellow

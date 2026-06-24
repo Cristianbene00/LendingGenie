@@ -14,7 +14,7 @@ No Azure admin needed. You log in with your own Microsoft account, grant permiss
 2. Search for **App registrations** in the top search bar
 3. Click **New registration**
 4. Fill in:
-   - **Name**: `Cashera KB Trainer`
+   - **Name**: `LendingGenie KB Trainer`
    - **Supported account types**: "Accounts in this organizational directory only"
    - **Redirect URI**: Select **Public client/native (mobile & desktop)** → enter `http://localhost`
 5. Click **Register**

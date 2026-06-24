@@ -32,11 +32,11 @@ async function main() {
 
   const outDir = './data/fine-tune-exports';
   fs.mkdirSync(outDir, { recursive: true });
-  const filename = `cashera-ft-${new Date().toISOString().slice(0, 10)}-${rows.length}pairs.jsonl`;
+  const filename = `lendinggenie-ft-${new Date().toISOString().slice(0, 10)}-${rows.length}pairs.jsonl`;
   const dest = path.join(outDir, filename);
   const lines = rows.map((r) =>
     JSON.stringify({
-      system: 'You are a Cashera Capital support agent. Answer using internal knowledge.',
+      system: 'You are a LendingGenie support agent. Answer using internal knowledge.',
       messages: [
         { role: 'user', content: r.question },
         { role: 'assistant', content: r.answer },

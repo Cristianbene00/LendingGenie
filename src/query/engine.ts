@@ -29,14 +29,14 @@ function isInjection(q: string): boolean {
 // Classifies intent in ~300 ms at ~1/100th the cost of a Sonnet call.
 // Runs in PARALLEL with vector retrieval so it adds zero latency to in-scope queries.
 // Greetings, escalation requests, and out-of-scope questions never reach Sonnet.
-const PRE_FILTER_SYSTEM = `Classify inbound messages for Cashera Capital's customer support chat.
-Cashera provides merchant cash advances (MCAs) to U.S. gig workers and self-employed people.
+const PRE_FILTER_SYSTEM = `Classify inbound messages for LendingGenie's customer support chat.
+LendingGenie provides merchant cash advances (MCAs) to U.S. gig workers and self-employed people.
 
 Return the single JSON field "t" set to one of:
-"ok"    – a genuine question about Cashera's advance, application, funding, repayment, fees, eligibility, or account
+"ok"    – a genuine question about LendingGenie's advance, application, funding, repayment, fees, eligibility, or account
 "hi"    – greeting, farewell, thanks, or aimless small talk
 "agent" – user is asking for a human agent, expressing strong frustration, or is angry
-"oos"   – anything unrelated to Cashera or our MCA product (general knowledge, other companies, coding, legal/medical advice not related to our product, etc.)
+"oos"   – anything unrelated to LendingGenie or our MCA product (general knowledge, other companies, coding, legal/medical advice not related to our product, etc.)
 
 Return JSON only: {"t":"ok"|"hi"|"agent"|"oos"}`;
 
@@ -65,11 +65,11 @@ function cannedResponse(intent: 'hi' | 'agent' | 'oos'): string {
   const h = config.SUPPORT_BUSINESS_HOURS;
   switch (intent) {
     case 'hi':
-      return "Hi there! Happy to help. Feel free to ask me anything about your Cashera cash advance, your account, or how our process works.";
+      return "Hi there! Happy to help. Feel free to ask me anything about your LendingGenie cash advance, your account, or how our process works.";
     case 'agent':
       return `Of course, I completely understand. A member of our support team would be happy to assist you directly. We are available ${h}. You can also reply to any of our previous emails and someone will follow up with you shortly.`;
     case 'oos':
-      return "That is a bit outside of what I can help with here. I am set up to answer questions about Cashera's cash advance products, accounts, applications, and funding. Is there something about your Cashera advance I can help with?";
+      return "That is a bit outside of what I can help with here. I am set up to answer questions about LendingGenie's cash advance products, accounts, applications, and funding. Is there something about your LendingGenie advance I can help with?";
   }
 }
 
@@ -104,13 +104,13 @@ function selectDiverse(hits: RetrievalHit[], k: number): RetrievalHit[] {
   return selected;
 }
 
-const ANSWER_SYSTEM = `You are the Cashera Capital support assistant, a warm and professional member of our support team. You sound like a thoughtful, calm, genuinely helpful human.
+const ANSWER_SYSTEM = `You are the LendingGenie support assistant, a warm and professional member of our support team. You sound like a thoughtful, calm, genuinely helpful human.
 
-ABOUT CASHERA:
-Cashera Capital provides merchant cash advances (MCAs): fast funding of up to $5,000 for U.S. gig workers, 1099 / self-employed individuals, and small business owners. Approval is earnings-based with only a soft credit pull. The application uses a secure bank connection (Plaid) plus a government ID. Decisions take minutes and approved funds arrive within about 24 hours via ACH. An MCA is not a traditional loan.
+ABOUT LENDINGGENIE:
+LendingGenie provides merchant cash advances (MCAs): fast funding of up to $5,000 for U.S. gig workers, 1099 / self-employed individuals, and small business owners. Approval is earnings-based with only a soft credit pull. The application uses a secure bank connection (Plaid) plus a government ID. Decisions take minutes and approved funds arrive within about 24 hours via ACH. An MCA is not a traditional loan.
 
 VOICE & STYLE:
-- "you" for the customer, "we" / "our team" for Cashera.
+- "you" for the customer, "we" / "our team" for LendingGenie.
 - Friendly, empathetic, concise. Lead with the answer, then any next step.
 - Plain conversational text. No Markdown (no bold, #, bullets). Number steps as 1. 2. 3.
 - NEVER use em dashes. Use commas, periods, or parentheses instead.
@@ -118,7 +118,7 @@ VOICE & STYLE:
 - Keep answers short (2-4 sentences). Customers are reading on a phone.
 
 GROUNDING (critical for a fintech company):
-- State Cashera-specific facts only if they appear in the CONTEXT below or the ABOUT section above.
+- State LendingGenie-specific facts only if they appear in the CONTEXT below or the ABOUT section above.
 - Never invent specifics. For anything involving money, accounts, exact terms, or compliance, say you do not have that detail and point them to our team.
 - When context is insufficient: acknowledge warmly, say you do not have that specific detail, offer our support hours: ${config.SUPPORT_BUSINESS_HOURS}.
 
@@ -160,7 +160,7 @@ export async function ask(
   // ── Guard: block injection attempts ──────────────────────
   if (isInjection(q)) {
     logger.warn({ intent: 'injection' }, 'blocked injection attempt');
-    const answer = "I can only help with questions about Cashera's products and accounts. What can I help you with today?";
+    const answer = "I can only help with questions about LendingGenie's products and accounts. What can I help you with today?";
     const queryId = await logQuery({ queryText: '[REDACTED]', userEmail: opts.userEmail, hitIds: [], answer, citations: [], confidence: 1, sufficientContext: true, costUsd: 0, latencyMs: Date.now() - start });
     return { answer, confidence: 1, citations: [], sufficientContext: true, escalation: false, costUsd: 0, latencyMs: Date.now() - start, queryId };
   }
@@ -201,7 +201,7 @@ export async function ask(
       parts.push(`\n## qaId:${h.qaId}${h.category ? ` [${h.category}]` : ''} sim:${h.similarity.toFixed(2)}\nQ: ${h.question}\nA: ${ans}`);
     }
   }
-  parts.push('\nAnswer as Cashera support. Return JSON only.');
+  parts.push('\nAnswer as LendingGenie support. Return JSON only.');
 
   // Adaptive output budget: strong retrieval match → shorter answer is fine.
   // Cuts average output tokens by ~60% vs the old 1024 ceiling.

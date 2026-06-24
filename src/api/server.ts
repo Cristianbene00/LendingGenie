@@ -179,6 +179,6 @@ app.get('/health', async () => ({ ok: true }));
 
 async function main() {
   await app.listen({ port: config.API_PORT, host: '0.0.0.0' });
-  logger.info({ port: config.API_PORT }, 'Cashera KB API up');
+  logger.info({ port: config.API_PORT }, 'LendingGenie API up');
 }
 main().catch((err) => { logger.error({ err }, 'API fail'); process.exit(1); });
