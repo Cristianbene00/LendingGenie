@@ -1,16 +1,19 @@
-import type { Metadata } from "next";
-import { ReactNode } from "react";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
+import { Toaster } from './ui';
 
 export const metadata: Metadata = {
-  title: "LendingGenie — AI Credit & Loan Assistant",
-  description: "Understand your credit situation and find the right loan with LendingGenie's AI-powered assistant.",
+  title: 'LendingGenie KB — Operations Console',
+  description: 'Internal operations console for LendingGenie knowledge base management.',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="font-sans">{children}</body>
+      <body className="antialiased">
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }
