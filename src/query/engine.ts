@@ -9,9 +9,6 @@ import { QueryAnswer } from '../shared/schemas.js';
 const config = getConfig();
 const CONFIDENCE_FLOOR = 0.6;
 
-// ── Layer 1: zero-cost injection guard ───────────────────────
-// Catches prompt-injection attempts before any model call.
-// Patterns are conservative — prefer false negatives over blocking real support questions.
 const INJECTION_RX = [
   /ignore\s+(all\s+)?(previous|prior|above)\s+instructions/i,
   /\byou\s+are\s+now\s+(a|an)\s+/i,
@@ -25,18 +22,14 @@ function isInjection(q: string): boolean {
   return INJECTION_RX.some((rx) => rx.test(q));
 }
 
-// ── Layer 2: Haiku pre-filter ────────────────────────────────
-// Classifies intent in ~300 ms at ~1/100th the cost of a Sonnet call.
-// Runs in PARALLEL with vector retrieval so it adds zero latency to in-scope queries.
-// Greetings, escalation requests, and out-of-scope questions never reach Sonnet.
-const PRE_FILTER_SYSTEM = `Classify inbound messages for Cashera Capital's customer support chat.
-Cashera provides merchant cash advances (MCAs) to U.S. gig workers and self-employed people.
+const PRE_FILTER_SYSTEM = `Classify inbound messages for LendingGenie's AI assistant chat.
+LendingGenie helps users understand their credit situation, improve their credit score, and find suitable loan products.
 
 Return the single JSON field "t" set to one of:
-"ok"    – a genuine question about Cashera's advance, application, funding, repayment, fees, eligibility, or account
-"hi"    – greeting, farewell, thanks, or aimless small talk
-"agent" – user is asking for a human agent, expressing strong frustration, or is angry
-"oos"   – anything unrelated to Cashera or our MCA product (general knowledge, other companies, coding, legal/medical advice not related to our product, etc.)
+"ok"    - a genuine question about credit scores, credit reports, loan eligibility, interest rates, debt, loan types, repayment, or financial health
+"hi"    - greeting, farewell, thanks, or aimless small talk
+"agent" - user is asking for a human agent, expressing strong frustration, or is angry
+"oos"   - anything unrelated to credit, loans, or personal finance
 
 Return JSON only: {"t":"ok"|"hi"|"agent"|"oos"}`;
 
@@ -54,38 +47,29 @@ async function classifyIntent(q: string): Promise<'ok' | 'hi' | 'agent' | 'oos'>
     });
     return data.t;
   } catch (e) {
-    logger.warn({ e }, 'pre-filter error — proceeding with full pipeline');
+    logger.warn({ e }, 'pre-filter error - proceeding with full pipeline');
     return 'ok';
   }
 }
 
-// Human-sounding canned responses for non-product intents.
-// These bypass retrieval and Sonnet entirely.
 function cannedResponse(intent: 'hi' | 'agent' | 'oos'): string {
   const h = config.SUPPORT_BUSINESS_HOURS;
   switch (intent) {
     case 'hi':
-      return "Hi there! Happy to help. Feel free to ask me anything about your Cashera cash advance, your account, or how our process works.";
+      return "Hi there! I am LendingGenie, your AI credit and loan assistant. Feel free to ask me anything about your credit score, improving your credit, loan options, or how to qualify for better rates.";
     case 'agent':
-      return `Of course, I completely understand. A member of our support team would be happy to assist you directly. We are available ${h}. You can also reply to any of our previous emails and someone will follow up with you shortly.`;
+      return `Of course, I completely understand. A member of our team would be happy to assist you directly. We are available ${h}. You can also reach us through the contact form and someone will follow up with you shortly.`;
     case 'oos':
-      return "That is a bit outside of what I can help with here. I am set up to answer questions about Cashera's cash advance products, accounts, applications, and funding. Is there something about your Cashera advance I can help with?";
+      return "That is a bit outside of what I can help with here. I am set up to answer questions about credit scores, credit reports, loan options, and personal finance. Is there something about your credit or a loan I can help with?";
   }
 }
 
-// ── Layer 3: RAG — retrieve, diversify, compress, generate ───
-
-// Retrieve top-12 with a wider net (floor 0.45), then quality-gate and
-// diversify before passing context to the model. This gives us more signal
-// to work with while keeping the context window lean.
 const RETRIEVE_CANDIDATES = 12;
 const RETRIEVE_FLOOR = 0.45;
-const QUALITY_FLOOR = 0.60;   // minimum similarity to include in the context
-const CTX_HITS = 4;           // max entries passed to the model
-const CTX_ANSWER_CHARS = 420; // truncate long answers to ~110 tokens each
+const QUALITY_FLOOR = 0.60;
+const CTX_HITS = 4;
+const CTX_ANSWER_CHARS = 420;
 
-// MMR-lite: select up to k diverse hits, capping category representation at 2.
-// Prevents the model from seeing near-duplicate entries on the same subtopic.
 function selectDiverse(hits: RetrievalHit[], k: number): RetrievalHit[] {
   const selected: RetrievalHit[] = [];
   const catCount: Record<string, number> = {};
@@ -96,7 +80,6 @@ function selectDiverse(hits: RetrievalHit[], k: number): RetrievalHit[] {
     selected.push(h);
     catCount[cat] = (catCount[cat] ?? 0) + 1;
   }
-  // Back-fill if not enough diverse hits (edge case with very narrow KBs)
   for (const h of hits) {
     if (selected.length >= k) break;
     if (!selected.includes(h)) selected.push(h);
@@ -104,25 +87,21 @@ function selectDiverse(hits: RetrievalHit[], k: number): RetrievalHit[] {
   return selected;
 }
 
-const ANSWER_SYSTEM = `You are the Cashera Capital support assistant, a warm and professional member of our support team. You sound like a thoughtful, calm, genuinely helpful human.
+const ANSWER_SYSTEM = `You are LendingGenie, a warm and knowledgeable AI credit and loan assistant.
 
-ABOUT CASHERA:
-Cashera Capital provides merchant cash advances (MCAs): fast funding of up to $5,000 for U.S. gig workers, 1099 / self-employed individuals, and small business owners. Approval is earnings-based with only a soft credit pull. The application uses a secure bank connection (Plaid) plus a government ID. Decisions take minutes and approved funds arrive within about 24 hours via ACH. An MCA is not a traditional loan.
+ABOUT LENDINGGENIE:
+LendingGenie helps users understand their credit situation, improve their credit scores, and find loan products that match their financial profile.
 
 VOICE & STYLE:
-- "you" for the customer, "we" / "our team" for Cashera.
+- "you" for the user, "we" / "our team" for LendingGenie.
 - Friendly, empathetic, concise. Lead with the answer, then any next step.
-- Plain conversational text. No Markdown (no bold, #, bullets). Number steps as 1. 2. 3.
-- NEVER use em dashes. Use commas, periods, or parentheses instead.
-- Never mention "knowledge base", "retrieved context", "qa_id", or confidence scores.
-- Keep answers short (2-4 sentences). Customers are reading on a phone.
+- Plain conversational text. No Markdown. Number steps as 1. 2. 3.
+- NEVER use em dashes.
+- Keep answers short (2-4 sentences).
 
-GROUNDING (critical for a fintech company):
-- State Cashera-specific facts only if they appear in the CONTEXT below or the ABOUT section above.
-- Never invent specifics. For anything involving money, accounts, exact terms, or compliance, say you do not have that detail and point them to our team.
-- When context is insufficient: acknowledge warmly, say you do not have that specific detail, offer our support hours: ${config.SUPPORT_BUSINESS_HOURS}.
-
-Confidence scale: 0.85+ = clear match; 0.60–0.85 = partial; below 0.60 = weak.
+GROUNDING:
+- Never invent specific rates, terms, or loan amounts.
+- When context is insufficient, offer our support hours: ${config.SUPPORT_BUSINESS_HOURS}.
 
 Return JSON only: { "answer": string, "confidence": number, "citations": [{"qaId": string, "question": string, "similarity": number}], "sufficient_context": boolean, "escalation": boolean }`;
 
@@ -157,58 +136,44 @@ export async function ask(
   const start = Date.now();
   const q = question.trim().replace(/\s+/g, ' ');
 
-  // ── Guard: block injection attempts ──────────────────────
   if (isInjection(q)) {
     logger.warn({ intent: 'injection' }, 'blocked injection attempt');
-    const answer = "I can only help with questions about Cashera's products and accounts. What can I help you with today?";
+    const answer = "I can only help with questions about credit, loans, and personal finance. What can I help you with today?";
     const queryId = await logQuery({ queryText: '[REDACTED]', userEmail: opts.userEmail, hitIds: [], answer, citations: [], confidence: 1, sufficientContext: true, costUsd: 0, latencyMs: Date.now() - start });
     return { answer, confidence: 1, citations: [], sufficientContext: true, escalation: false, costUsd: 0, latencyMs: Date.now() - start, queryId };
   }
 
-  // ── Pre-filter + retrieval run in parallel ────────────────
-  // classifyIntent uses Haiku (~300 ms). retrieve() hits Postgres (~150 ms).
-  // Running both simultaneously means in-scope queries pay zero extra latency
-  // for the pre-filter, while OOS/greeting queries skip Sonnet entirely.
   const [intent, candidates] = await Promise.all([
     classifyIntent(q),
     retrieve(q, RETRIEVE_CANDIDATES, RETRIEVE_FLOOR),
   ]);
   logger.info({ q: q.slice(0, 80), intent, candidates: candidates.length }, 'pre-filter + retrieval done');
 
-  // ── Canned response for non-product intents ───────────────
   if (intent !== 'ok') {
     const answer = deEmDash(cannedResponse(intent));
     const queryId = await logQuery({ queryText: q, userEmail: opts.userEmail, hitIds: [], answer, citations: [], confidence: 1, sufficientContext: true, costUsd: 0, latencyMs: Date.now() - start });
     return { answer, confidence: 1, citations: [], sufficientContext: true, escalation: intent === 'agent', costUsd: 0, latencyMs: Date.now() - start, queryId };
   }
 
-  // ── Select diverse, high-quality hits ────────────────────
   const qualified = candidates.filter((h) => h.similarity >= QUALITY_FLOOR);
-  // If too few pass the quality gate, fall back to the top raw candidates
   const pool = qualified.length >= 2 ? qualified : candidates.slice(0, CTX_HITS);
   const hits = selectDiverse(pool, opts.topK ?? CTX_HITS);
 
-  // ── Build compact context window ─────────────────────────
-  // Each entry is truncated to CTX_ANSWER_CHARS to keep input tokens low
-  // while still giving the model enough signal to ground its answer.
   const parts: string[] = [`# Question\n${q}\n`];
   if (hits.length === 0) {
     parts.push('# Context\n(No relevant KB entries found for this question.)');
   } else {
     parts.push(`# Context (${hits.length} entries, ranked by relevance)`);
     for (const h of hits) {
-      const ans = h.answer.length > CTX_ANSWER_CHARS ? `${h.answer.slice(0, CTX_ANSWER_CHARS)}…` : h.answer;
+      const ans = h.answer.length > CTX_ANSWER_CHARS ? `${h.answer.slice(0, CTX_ANSWER_CHARS)}...` : h.answer;
       parts.push(`\n## qaId:${h.qaId}${h.category ? ` [${h.category}]` : ''} sim:${h.similarity.toFixed(2)}\nQ: ${h.question}\nA: ${ans}`);
     }
   }
-  parts.push('\nAnswer as Cashera support. Return JSON only.');
+  parts.push('\nAnswer as LendingGenie assistant. Return JSON only.');
 
-  // Adaptive output budget: strong retrieval match → shorter answer is fine.
-  // Cuts average output tokens by ~60% vs the old 1024 ceiling.
   const topSim = hits[0]?.similarity ?? 0;
   const maxTokens = topSim >= 0.85 ? 260 : topSim >= 0.65 ? 320 : 380;
 
-  // ── Generate answer ───────────────────────────────────────
   const { data, costUsd } = await callClaude<z.infer<typeof AnswerSchema>>({
     model: config.ANTHROPIC_MODEL_DEFAULT,
     systemPrompt: ANSWER_SYSTEM,
@@ -234,8 +199,6 @@ export async function ask(
     costUsd, latencyMs: Date.now() - start,
   });
 
-  // Bank knowledge gaps — only genuine product questions that lacked good answers.
-  // Greetings/OOS/escalations are already handled above and never reach here.
   if (!answer.escalation && (!answer.sufficientContext || answer.confidence < CONFIDENCE_FLOOR)) {
     const reason = hits.length === 0 ? 'no_matching_context'
       : !answer.sufficientContext ? 'insufficient_context' : 'low_confidence';
