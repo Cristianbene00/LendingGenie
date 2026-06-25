@@ -1,5 +1,5 @@
 'use client';
-import { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes, useEffect, useState } from 'react';
+import { ButtonHTMLAttributes, CSSProperties, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
 import { Loader2 } from 'lucide-react';
 
@@ -7,7 +7,7 @@ export function cn(...c: (string | false | null | undefined)[]) {
   return clsx(c);
 }
 
-// ─── Button ──────────────────────────────────────────────────
+// ─── Button ────────────────────────────────────────────────────
 type BtnVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
 type BtnSize = 'sm' | 'md';
 const btnBase = 'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40';
@@ -30,7 +30,7 @@ export function Button({ variant = 'primary', size = 'md', loading, className, c
   );
 }
 
-// ─── Badge ───────────────────────────────────────────────────
+// ─── Badge ────────────────────────────────────────────────────
 type BadgeColor = 'blue' | 'green' | 'violet' | 'gray' | 'amber' | 'red';
 const badgeColors: Record<BadgeColor, string> = {
   blue: 'bg-blue-50 text-blue-700 ring-blue-200',
@@ -45,8 +45,8 @@ export function Badge({ color = 'gray', children, className }: { color?: BadgeCo
 }
 
 // ─── Card ────────────────────────────────────────────────────
-export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn('rounded-xl border border-slate-200 bg-white shadow-card', className)}>{children}</div>;
+export function Card({ children, className, style }: { children: ReactNode; className?: string; style?: CSSProperties }) {
+  return <div className={cn('rounded-xl border border-slate-200 bg-white shadow-card', className)} style={style}>{children}</div>;
 }
 
 // ─── Inputs ──────────────────────────────────────────────────
@@ -58,7 +58,7 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
   return <textarea className={cn(fieldBase, 'resize-y leading-relaxed', className)} {...props} />;
 }
 
-// ─── Spinner / EmptyState ────────────────────────────────────
+// ─── Spinner / EmptyState ──────────────────────────────────────────
 export function Spinner({ className }: { className?: string }) {
   return <Loader2 className={cn('h-4 w-4 animate-spin', className)} />;
 }
@@ -72,7 +72,7 @@ export function EmptyState({ icon, title, subtitle }: { icon?: ReactNode; title:
   );
 }
 
-// ─── Pagination ──────────────────────────────────────────────
+// ─── Pagination ──────────────────────────────────────────────────
 export function Pagination({ page, pageSize, total, onPage }: { page: number; pageSize: number; total: number; onPage: (p: number) => void }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (total === 0) return null;
@@ -90,7 +90,7 @@ export function Pagination({ page, pageSize, total, onPage }: { page: number; pa
   );
 }
 
-// ─── Toasts ──────────────────────────────────────────────────
+// ─── Toasts ───────────────────────────────────────────────────
 type ToastItem = { id: number; message: string; kind: 'success' | 'error' | 'info' };
 let _toasts: ToastItem[] = [];
 let _subs: ((t: ToastItem[]) => void)[] = [];
