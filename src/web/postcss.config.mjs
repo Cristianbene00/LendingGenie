@@ -1,8 +1,11 @@
-// Next loads this from the web project dir, but Tailwind's own config search
-// starts at cwd (the project root), so point it at the root config explicitly.
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+
 export default {
   plugins: {
-    tailwindcss: { config: './tailwind.config.ts' },
+    tailwindcss: { config: path.join(here, '../../tailwind.config.ts') },
     autoprefixer: {},
   },
 };
