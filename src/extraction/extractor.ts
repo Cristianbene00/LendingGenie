@@ -5,7 +5,7 @@ import { ExtractionResult, ExtractionResultSchema, Thread } from '../shared/sche
 
 const config = getConfig();
 
-const EXTRACTION_SYSTEM_PROMPT = `You are extracting reusable Q&A pairs from a customer support email or chat thread for Cashera Capital's knowledge base.
+const EXTRACTION_SYSTEM_PROMPT = `You are extracting reusable Q&A pairs from a support email or chat thread for LendingGenie's knowledge base.
 
 # Decide first: is this a Q&A thread?
 Set is_qa_thread = false (and qa_pairs = []) if:
@@ -22,22 +22,22 @@ Set is_qa_thread = false (and qa_pairs = []) if:
 - Good: "Why might a customer be charged twice for a single transaction?"
 
 # Writing the answer
-- Distill the resolution into clear, reusable prose — don't paste verbatim
+- Distill the resolution into clear, reusable prose -- don't paste verbatim
 - Include reasoning, steps, and caveats
 - Strip specific people, Slack handles, ticket IDs
 - Use markdown for steps or code blocks where helpful
 
 # Category & tags
-Category: short label like "billing", "auth", "deployment", "api_errors", "configuration"
+Category: short label like "credit-basics", "credit-score", "loan-eligibility", "loan-types", "repayment", "rates", "application"
 Tags: 2-6 free-form keywords for retrieval
 
-# Confidence (0.0–1.0)
+# Confidence (0.0-1.0)
 - 0.9+: clean Q, definitive A, confirmed working
-- 0.7–0.9: clear answer, might be context-specific
-- 0.5–0.7: partial answer or inferred resolution
-- <0.5: don't include — return is_qa_thread=false instead
+- 0.7-0.9: clear answer, might be context-specific
+- 0.5-0.7: partial answer or inferred resolution
+- <0.5: don't include -- return is_qa_thread=false instead
 
-# PII rules — non-negotiable
+# PII rules -- non-negotiable
 Never include: email addresses, phone numbers, postal addresses, credit card/bank numbers, government IDs, API keys, passwords. First names without last names are OK.
 
 Return JSON only:

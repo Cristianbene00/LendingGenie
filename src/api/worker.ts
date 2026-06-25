@@ -13,8 +13,6 @@ import { Thread, ThreadSchema } from '../shared/schemas.js';
 
 const config = getConfig();
 
-// ─── Mbox processing ─────────────────────────────────────────
-
 async function handleMbox({ uploadId, filePath }: { uploadId: string; filePath: string }) {
   logger.info({ uploadId }, 'mbox started');
   await query(`UPDATE source_uploads SET status = 'parsing' WHERE id = $1`, [uploadId]);
@@ -42,8 +40,6 @@ async function handleMbox({ uploadId, filePath }: { uploadId: string; filePath: 
   try { fs.unlinkSync(filePath); } catch {}
 }
 
-// ─── Teams sync ──────────────────────────────────────────────
-
 async function handleTeams({ syncId, since, channelLabel }: { syncId: string; since: string | null; channelLabel: string }) {
   logger.info({ syncId, channelLabel }, 'teams sync started');
   await query(`UPDATE source_uploads SET status = 'parsing' WHERE id = $1`, [syncId]);
@@ -66,8 +62,6 @@ async function handleTeams({ syncId, since, channelLabel }: { syncId: string; si
   logger.info({ syncId, channelLabel, passed }, 'teams handoff done');
 }
 
-// ─── Q&A extraction ──────────────────────────────────────────
-
 async function handleExtract({ threadId }: { threadId: string }) {
   const { rows } = await query(`SELECT id, source_kind, topic, messages, participants, earliest_at, latest_at, dedup_key FROM threads WHERE id = $1 AND extraction_status = 'pending'`, [threadId]);
   const row = rows[0] as { id: string; source_kind: 'email'|'teams'; topic: string; messages: unknown; participants: string[]; earliest_at: Date|null; latest_at: Date|null; dedup_key: string } | undefined;
@@ -84,8 +78,6 @@ async function handleExtract({ threadId }: { threadId: string }) {
   }
 }
 
-// ─── Embedding ───────────────────────────────────────────────
-
 async function handleEmbed() {
   const count = await embedPending();
   if (count > 0) logger.info({ count }, 'embed batch done');
@@ -93,11 +85,9 @@ async function handleEmbed() {
     WHERE status = 'extracting' AND NOT EXISTS (SELECT 1 FROM threads t WHERE t.source_id = s.id AND t.extraction_status = 'pending')`);
 }
 
-// ─── Start ───────────────────────────────────────────────────
-
 async function main() {
   const ws = startWorkers({ mbox: handleMbox, teams: handleTeams, extract: handleExtract, embed: handleEmbed });
-  logger.info('Cashera KB worker started');
+  logger.info('LendingGenie worker started');
   const stop = async () => { await Promise.all(ws.map((w) => w.close())); process.exit(0); };
   process.on('SIGINT', stop); process.on('SIGTERM', stop);
 }

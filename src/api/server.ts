@@ -33,7 +33,7 @@ app.post('/api/uploads/mbox', async (req, reply) => {
   return reply.send({ uploadId, filename: data.filename, bytes: stat.size, status: 'pending' });
 });
 
-// List configured Teams channels (label only — no IDs leaked to the client)
+// List configured Teams channels (label only -- no IDs leaked to the client)
 app.get('/api/channels', async () => getTeamsChannels().map((c) => ({ label: c.label })));
 
 // Trigger Teams sync. Body: { channel?: label, since?: ISO }. With no channel,
@@ -89,7 +89,6 @@ app.get<{ Querystring: { category?: string; q?: string; source?: string; review?
   });
 });
 app.get('/api/qa/sources', async () => listSourceLabels());
-// Batch-mark entries as reviewed — must come before /:id routes
 app.post('/api/qa/batch-review', async (req, reply) => {
   const parsed = z.object({ ids: z.array(z.string().uuid()).min(1).max(200) }).safeParse(req.body);
   if (!parsed.success) return reply.code(400).send({ error: parsed.error.format() });
@@ -121,7 +120,7 @@ app.patch<{ Params: { id: string } }>('/api/qa/:id', async (req, reply) => {
   return reply.send({ ok: true });
 });
 
-// Open Questions bank — gaps the bot couldn't answer, awaiting human answers
+// Open Questions bank
 app.get<{ Querystring: { status?: 'open' | 'answered' | 'dismissed' } }>('/api/open-questions', async (req) =>
   listOpenQuestions(req.query.status ?? 'open'));
 app.post<{ Params: { id: string } }>('/api/open-questions/:id/answer', async (req, reply) => {
@@ -137,7 +136,7 @@ app.post<{ Params: { id: string }; Body: { reason?: string } }>('/api/open-quest
   return reply.send({ ok: true });
 });
 
-// Stats — used by both the sidebar count and the Dashboard view
+// Stats
 app.get('/api/stats', async () => {
   const { rows } = await query(`
     SELECT
@@ -156,7 +155,7 @@ app.get('/api/stats', async () => {
   return rows[0];
 });
 
-// Product Feedback notes — universal team notepad
+// Product Feedback notes
 app.get('/api/feedback-notes', async () => {
   const { rows } = await query(
     `SELECT id, body, created_at FROM product_feedback ORDER BY created_at DESC LIMIT 500`);
@@ -179,6 +178,6 @@ app.get('/health', async () => ({ ok: true }));
 
 async function main() {
   await app.listen({ port: config.API_PORT, host: '0.0.0.0' });
-  logger.info({ port: config.API_PORT }, 'Cashera KB API up');
+  logger.info({ port: config.API_PORT }, 'LendingGenie API up');
 }
 main().catch((err) => { logger.error({ err }, 'API fail'); process.exit(1); });
