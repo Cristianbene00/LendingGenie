@@ -1,12 +1,10 @@
 {
-  "name": "cashera-kb",
+  "name": "lendinggenie",
   "version": "0.1.0",
-  "description": "Cashera Capital knowledge base — builds a queryable KB from Gmail exports and Teams channel history using Claude + RAG. Will power the support agent on casheracapital.com.",
+  "description": "LendingGenie - AI-powered credit analysis and loan matching platform.",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=20.0.0"
-  },
+  "engines": { "node": ">=20.0.0" },
   "scripts": {
     "build": "tsc",
     "dev:api": "tsx watch src/api/server.ts",

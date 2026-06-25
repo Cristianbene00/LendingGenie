@@ -14,20 +14,13 @@ const ConfigSchema = z.object({
   REDIS_URL: z.string().url().default('redis://localhost:6379'),
 
   MS_GRAPH_CLIENT_ID: z.string().optional(),
-  // Tenant ID for single-tenant app registrations. Defaults to 'common'
-  // (multi-tenant), but single-tenant apps MUST use their tenant ID or
-  // Azure returns AADSTS50194.
   MS_GRAPH_TENANT_ID: z.string().default('common'),
   TEAMS_ENG_CHANNEL: z.string().optional(),
-  // Multiple labeled channels, format:
-  //   Label|teamId:channelId;Label2|teamId:channelId
-  // Falls back to TEAMS_ENG_CHANNEL (labeled "Engineers") if unset.
   TEAMS_CHANNELS: z.string().optional(),
 
-  INTERNAL_EMAIL_DOMAIN: z.string().default('casheracapital.com'),
+  INTERNAL_EMAIL_DOMAIN: z.string().default('lendinggenie.ai'),
 
-  // Shown to customers when they ask for a human / when we can't answer.
-  SUPPORT_BUSINESS_HOURS: z.string().default('Monday–Friday, 9:00 AM–5:00 PM ET'),
+  SUPPORT_BUSINESS_HOURS: z.string().default('Monday–Friday, 9:00 AM–6:00 PM ET'),
 
   NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),

@@ -3,8 +3,8 @@ import { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Cashera KB — Support Console",
-  description: "AI-powered knowledge base and curation console for Cashera Capital support",
+  title: "LendingGenie — AI Credit & Loan Assistant",
+  description: "Understand your credit situation and find the right loan with LendingGenie's AI-powered assistant.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
