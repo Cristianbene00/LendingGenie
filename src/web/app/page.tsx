@@ -111,7 +111,7 @@ export default function AdminConsole() {
   );
 }
 
-// ─── Page Header ─────────────────────────────────────────────
+// --- Page Header ---
 function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   return (
     <div className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between">
@@ -124,7 +124,7 @@ function PageHeader({ title, subtitle, action }: { title: string; subtitle?: str
   );
 }
 
-// ─── Dashboard ───────────────────────────────────────────────
+// --- Dashboard ---
 function StatCard({ label, value, icon, color }: { label: string; value: number | string | undefined; icon: ReactNode; color: string }) {
   return (
     <Card className="p-5">
@@ -136,6 +136,13 @@ function StatCard({ label, value, icon, color }: { label: string; value: number 
     </Card>
   );
 }
+
+const TRAINING_STEPS = [
+  { step: '1', title: 'Upload Sources', desc: 'Import .mbox email archives or sync Microsoft Teams channels to extract real support conversations.', nav: 'Sync & Upload' },
+  { step: '2', title: 'Review Q&As', desc: 'AI extracts Q&A pairs from threads. Review, edit, and approve them in the Knowledge Base.', nav: 'Knowledge Base' },
+  { step: '3', title: 'Answer Gaps', desc: 'Open Questions captures queries the bot could not answer. Fill them in so the bot improves.', nav: 'Open Questions' },
+  { step: '4', title: 'Test the Bot', desc: 'Use the Ask view to test chatbot responses with real loan and credit questions before going live.', nav: 'Ask' },
+];
 
 function DashboardView({ stats }: { stats: Record<string, number> | null }) {
   return (
@@ -149,7 +156,7 @@ function DashboardView({ stats }: { stats: Record<string, number> | null }) {
             <h2 className="text-lg font-semibold">Welcome to the LendingGenie Ops Console</h2>
           </div>
           <p className="text-indigo-100 text-sm max-w-2xl">
-            Train your AI chatbot by uploading support emails, syncing Teams channels, and curating Q&A pairs.
+            Train your AI chatbot by uploading support emails, syncing Teams channels, and curating Q&amp;A pairs.
             Once ready, the chatbot will help users with credit analysis, loan eligibility, and FAQs.
           </p>
         </div>
@@ -170,12 +177,7 @@ function DashboardView({ stats }: { stats: Record<string, number> | null }) {
         <div>
           <h2 className="text-base font-semibold text-slate-800 mb-4">Training Guide</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[
-              { step: '1', title: 'Upload Sources', desc: 'Import .mbox email archives or sync Microsoft Teams channels to extract real support conversations.', nav: 'Sync & Upload' },
-              { step: '2', title: 'Review Q&As', desc: 'AI extracts Q&A pairs from threads. Review, edit, and approve them in the Knowledge Base.', nav: 'Knowledge Base' },
-              { step: '3', title: 'Answer Gaps', desc: 'Open Questions captures queries the bot couldn't answer. Fill them in so the bot improves.', nav: 'Open Questions' },
-              { step: '4', title: 'Test the Bot', desc: 'Use the Ask view to test chatbot responses with real loan and credit questions before going live.', nav: 'Ask' },
-            ].map((s) => (
+            {TRAINING_STEPS.map((s) => (
               <Card key={s.step} className="p-5">
                 <div className="h-7 w-7 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center mb-3">{s.step}</div>
                 <h3 className="text-sm font-semibold text-slate-800 mb-1">{s.title}</h3>
@@ -189,7 +191,7 @@ function DashboardView({ stats }: { stats: Record<string, number> | null }) {
   );
 }
 
-// ─── Ask ─────────────────────────────────────────────────────
+// --- Ask ---
 type ChatMsg = { role: 'user' | 'assistant'; text: string; queryId?: string; confidence?: number; citations?: { question: string; answer: string; score: number }[]; showCitations?: boolean };
 
 const STARTERS = [
@@ -317,7 +319,7 @@ function AskView() {
   );
 }
 
-// ─── Knowledge Base ──────────────────────────────────────────
+// --- Knowledge Base ---
 type QAEntry = { id: string; question: string; answer: string; category: string | null; tags: string[]; confidence: number; is_reviewed: boolean; source_label: string | null; created_at: string };
 
 function KBView() {
@@ -365,7 +367,6 @@ function KBView() {
         action={<Button size="sm" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" />Add Entry</Button>}
       />
       <div className="p-6 space-y-4">
-        {/* Filters */}
         <div className="flex gap-2 flex-wrap">
           <form onSubmit={(e) => { e.preventDefault(); setSearch(searchInput); setPage(0); }} className="flex gap-2 flex-1 min-w-48">
             <Input placeholder="Search questions..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="flex-1" />
@@ -508,7 +509,7 @@ function EditEntryModal({ entry, onClose, onSaved }: { entry: QAEntry; onClose: 
   );
 }
 
-// ─── Open Questions ───────────────────────────────────────────
+// --- Open Questions ---
 type OQ = { id: string; question: string; asked_by: string | null; status: string; created_at: string };
 
 function OpenQuestionsView() {
@@ -531,7 +532,7 @@ function OpenQuestionsView() {
 
   return (
     <div>
-      <PageHeader title="Open Questions" subtitle="Questions the bot couldn't answer — fill them in to improve coverage" />
+      <PageHeader title="Open Questions" subtitle="Questions the bot could not answer — fill them in to improve coverage" />
       <div className="p-6 space-y-4">
         <div className="flex gap-1 border-b border-slate-200">
           {(['open', 'answered', 'dismissed'] as const).map((t) => (
@@ -593,14 +594,14 @@ function AnswerModal({ oq, onClose, onSaved }: { oq: OQ; onClose: () => void; on
         <Textarea value={answer} onChange={(e) => setAnswer(e.target.value)} rows={5} placeholder="Write a clear, reusable answer..." required />
         <div className="flex justify-end gap-2">
           <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
-          <Button type="submit" loading={saving}>Save & Add to KB</Button>
+          <Button type="submit" loading={saving}>Save &amp; Add to KB</Button>
         </div>
       </form>
     </Modal>
   );
 }
 
-// ─── Sync & Upload ────────────────────────────────────────────
+// --- Sync & Upload ---
 function SyncView() {
   const [channels, setChannels] = useState<{ label: string }[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -637,7 +638,6 @@ function SyncView() {
     <div>
       <PageHeader title="Sync & Upload" subtitle="Ingest email archives or sync Teams channels" />
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Mbox upload */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-9 w-9 rounded-lg bg-violet-100 flex items-center justify-center"><FileText className="h-5 w-5 text-violet-600" /></div>
@@ -652,7 +652,6 @@ function SyncView() {
           </Button>
         </Card>
 
-        {/* Teams sync */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-9 w-9 rounded-lg bg-indigo-100 flex items-center justify-center"><RefreshCw className="h-5 w-5 text-indigo-600" /></div>
@@ -681,7 +680,7 @@ function SyncView() {
   );
 }
 
-// ─── Jobs ─────────────────────────────────────────────────────
+// --- Jobs ---
 type Job = { id: string; kind: string; filename: string | null; status: string; thread_count: number | null; qa_count: number | null; created_at: string; completed_at: string | null };
 
 const STATUS_COLOR: Record<string, 'gray' | 'blue' | 'amber' | 'green' | 'red'> = {
@@ -719,7 +718,7 @@ function JobsView() {
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Kind</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Threads</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Q&As</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Q&amp;As</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Started</th>
                 </tr>
               </thead>
@@ -743,7 +742,7 @@ function JobsView() {
   );
 }
 
-// ─── Product Feedback ─────────────────────────────────────────
+// --- Product Feedback ---
 type Note = { id: string; body: string; created_at: string };
 
 function FeedbackView() {
@@ -804,7 +803,7 @@ function FeedbackView() {
   );
 }
 
-// ─── Modal ────────────────────────────────────────────────────
+// --- Modal ---
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
