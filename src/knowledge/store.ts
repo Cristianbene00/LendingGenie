@@ -67,6 +67,9 @@ export async function deactivateQaPair(id: string, reason: string) {
   await query(`UPDATE qa_pairs SET is_active = false, curator_notes = COALESCE(curator_notes,'') || E'\n[deactivated] ' || $2 WHERE id = $1`, [id, reason]);
 }
 
+// Edit an existing entry. Any change to question/answer makes the embedding
+// stale, so we drop it and re-queue embedding (embedPending re-embeds rows
+// that have no embedding row).
 export async function updateQaPair(id: string, fields: { question?: string; answer?: string; category?: string | null }): Promise<boolean> {
   const sets: string[] = []; const params: unknown[] = [];
   if (fields.question !== undefined) { params.push(fields.question.trim()); sets.push(`question = $${params.length}`); }
@@ -108,12 +111,14 @@ export async function markReviewed(ids: string[]): Promise<number> {
   return res.rowCount ?? 0;
 }
 
+// Distinct source labels present in the KB, for UI filtering.
 export async function listSourceLabels(): Promise<string[]> {
   const { rows } = await query<{ source_label: string }>(
     `SELECT DISTINCT source_label FROM qa_pairs WHERE is_active = true AND source_label IS NOT NULL ORDER BY source_label`);
   return rows.map((r) => r.source_label);
 }
 
+// Insert a curated Q&A entry and queue it for embedding (immediately searchable).
 export async function createQaPair(opts: {
   question: string; answer: string; category?: string | null; tags?: string[]; sourceLabel?: string;
 }): Promise<string> {
@@ -127,16 +132,22 @@ export async function createQaPair(opts: {
   return id;
 }
 
-const MANUAL_INGEST_SYSTEM = `You are a meticulous knowledge base editor for LendingGenie, an AI-powered credit and loan assistant platform that helps users understand their credit situation and find loan products. A team member has drafted a Q&A to add to our knowledge base. Turn the draft into one clean, high-quality entry.
+// -- Quality ingestion for manually-added entries ---------
+// We do NOT store a curator's draft at face value. We pass it through Claude
+// to clean wording/grammar, shape a clear standalone question, write the
+// answer in our support voice (no markdown, no em dashes), and assign a
+// category + tags. We reject drafts that are empty, gibberish, or off-topic
+// (not about LendingGenie's credit and loan offerings). We never invent facts.
+const MANUAL_INGEST_SYSTEM = `You are a meticulous knowledge base editor for LendingGenie, an AI chatbot platform that helps users with credit analysis, loan eligibility checks, and loan matching. A support team member has drafted a Q&A to add to our knowledge base. Turn the draft into one clean, high-quality entry.
 
 Do:
-- Rewrite the QUESTION as a clear, standalone question a user or advisor would actually ask.
-- Rewrite the ANSWER to be accurate, concise, and professional in a warm, helpful voice. Fix grammar and structure.
+- Rewrite the QUESTION as a clear, standalone question a customer or agent would actually ask.
+- Rewrite the ANSWER to be accurate, concise, and professional in a warm support voice. Fix grammar and structure.
 - Suggest a short lowercase category (e.g. credit-basics, credit-score, loan-eligibility, loan-types, repayment, rates, application) and 1 to 4 short tags.
 - Preserve the original meaning. Do NOT invent facts, numbers, policies, or details that are not in the draft. Only clean, clarify, and structure what was provided.
 - Use no Markdown symbols and no em dashes.
 
-Set usable=false only if the draft is empty, gibberish, or clearly not about credit, loans, or personal finance. Give a short reason.
+Set usable=false only if the draft is empty, gibberish, or clearly not about credit, loans, LendingGenie offerings, or support. Give a short reason.
 
 Return JSON: { "usable": boolean, "reason": string, "question": string, "answer": string, "category": string, "tags": string[] }`;
 
@@ -162,6 +173,11 @@ export async function ingestManualEntry(raw: { question: string; answer: string;
   });
   return { id };
 }
+
+// --- Open Questions bank ------------------------------------
+// Questions the bot couldn't confidently answer, queued for a human to
+// answer manually. Deduped by normalized text, with an ask_count so the
+// most-requested gaps surface first.
 
 export async function recordOpenQuestion(opts: {
   question: string; queryId?: string; askedBy?: string; reason: string; bestConfidence: number;
@@ -190,6 +206,9 @@ export async function listOpenQuestions(status: 'open' | 'answered' | 'dismissed
   return rows;
 }
 
+// Answer an open question: create an active curated qa_pair, embed it, and
+// mark the open question resolved. The curated answer is immediately
+// retrievable, so the bot answers this question next time.
 export async function answerOpenQuestion(id: string, answer: string, answeredBy?: string): Promise<string> {
   const { rows } = await query<{ question: string; status: string }>(
     `SELECT question, status FROM open_questions WHERE id = $1`, [id]);
